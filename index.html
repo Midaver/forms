@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Midaver Loan Application - Kenya</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f5f5f5;
+      padding: 30px;
+    }
+    .form-container {
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 700px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #004d00;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <h2>Midaver Loan Application</h2>
+    <form id="loanForm" action="https://formspree.io/f/xwpwnbzv" method="POST" enctype="multipart/form-data">
+
+      <!-- Personal Info -->
+      <div class="mb-3">
+        <label class="form-label">Full Name</label>
+        <input type="text" name="full_name" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">National ID Number</label>
+        <input type="text" name="national_id" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Phone Number</label>
+        <input type="tel" name="phone_number" class="form-control" placeholder="+254..." required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Email Address</label>
+        <input type="email" name="email" class="form-control">
+      </div>
+
+      <!-- Profile Photo 
+      <div class="mb-3">
+        <label class="form-label">Profile Photo</label>
+        <input type="file" name="profile_photo" class="form-control" accept="image/*" required>
+      </div>
+-->
+      <hr>
+
+      <!-- Business Info -->
+      <h5>Business Information</h5>
+      <div class="mb-3">
+        <label class="form-label">Business Name</label>
+        <input type="text" name="business_name" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Business Type</label>
+        <input type="text" name="business_type" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Business GPS Location</label>
+        <input type="text" name="business_location" id="business_location" class="form-control" readonly>
+        <button type="button" class="btn btn-success mt-2" onclick="getLocation('business')">Get Business Location</button>
+      </div>
+
+      <hr>
+
+      <!-- Home Info -->
+      <h5>Home Information</h5>
+      <div class="mb-3">
+        <label class="form-label">Home Address</label>
+        <input type="text" name="home_address" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Home GPS Location</label>
+        <input type="text" name="home_location" id="home_location" class="form-control" readonly>
+        <button type="button" class="btn btn-success mt-2" onclick="getLocation('home')">Get Home Location</button>
+      </div>
+
+      <hr>
+
+      <!-- Financial Info -->
+      <h5>Financial Information</h5>
+      <div class="mb-3">
+        <label class="form-label">Gross Monthly Income (Ksh)</label>
+        <input type="number" name="gross_income" id="gross_income" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Monthly Expenses (Ksh)</label>
+        <input type="number" name="expenses" id="expenses" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Net Income (Ksh)</label>
+        <input type="number" name="net_income" id="net_income" class="form-control" readonly>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Loan Amount (Ksh)</label>
+        <input type="number" name="loan_amt" id="loan_amt" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100 mt-3">Submit Application</button>
+    </form>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="responseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-center">
+        <div class="modal-header">
+          <h5 class="modal-title" id="responseTitle"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="responseMessage"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Auto-calculate net income
+    document.getElementById('gross_income').addEventListener('input', calcNet);
+    document.getElementById('expenses').addEventListener('input', calcNet);
+
+    function calcNet() {
+      const gross = parseFloat(document.getElementById('gross_income').value) || 0;
+      const exp = parseFloat(document.getElementById('expenses').value) || 0;
+      document.getElementById('net_income').value = gross - exp;
+    }
+
+    // Get user location
+    function getLocation(type) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const coords = `${position.coords.latitude}, ${position.coords.longitude}`;
+          if (type === 'home') {
+            document.getElementById('home_location').value = coords;
+          } else {
+            document.getElementById('business_location').value = coords;
+          }
+        }, () => {
+          alert("Unable to retrieve your location. Please allow location access.");
+        });
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+
+    // Form submission with modal feedback
+    const form = document.getElementById('loanForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      try {
+        const response = await fetch(form.action, {
+          method: form.method,
+          body: formData,
+          headers: { 'Accept': 'application/json' }
+        });
+        if (response.ok) {
+          showModal('Success 🎉', 'Your loan application was submitted successfully.');
+          form.reset();
+        } else {
+          showModal('Error ❌', 'There was a problem submitting your form. Please try again.');
+        }
+      } catch (error) {
+        showModal('Error ⚠️', 'Network error. Please check your connection and try again.');
+      }
+    });
+
+    function showModal(title, message) {
+      document.getElementById('responseTitle').textContent = title;
+      document.getElementById('responseMessage').textContent = message;
+      const modal = new bootstrap.Modal(document.getElementById('responseModal'));
+      modal.show();
+    }
+  </script>
+</body>
+</html>
